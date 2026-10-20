@@ -1,0 +1,45 @@
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-bottom: 3rem;
+}
+
+/* Metric KPI card */
+.kpi-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #ffffff;
+  border-left: 5px solid #2e7d32;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-card.warning-kpi {
+  border-left-color: #f59e0b;
+}
+
+.kpi-card.danger-kpi {
+  border-left-color: #ef4444;
+}
+
+.kpi-card.info-kpi {
+  border-left-color: #0284c7;
+}
+
+.nav-link.active {
+  color: #1b5e20 !important;
+  font-weight: 700;
+  border-bottom: 2px solid #1b5e20;
+}
+
+/* Soil analysis gauge */
+.soil-gauge {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}

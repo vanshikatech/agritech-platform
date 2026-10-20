@@ -1,0 +1,164 @@
+{
+  "info": {
+    "_postman_id": "agritech-api-2026-v1",
+    "name": "AgriTech Platform REST API Collection",
+    "description": "Comprehensive Postman test collection for AgriTech MERN Platform APIs: Auth, Farms, Crops, Soil Advisor, Weather, Orders, and Admin endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Farmer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Suresh Patil\",\n  \"email\": \"farmer@agritech.com\",\n  \"password\": \"farmer123\",\n  \"role\": \"farmer\",\n  \"phone\": \"+91 9123456780\",\n  \"language\": \"hi\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"farmer@agritech.com\",\n  \"password\": \"farmer123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Farm Management",
+      "item": [
+        {
+          "name": "Get My Farms",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+          }
+        },
+        {
+          "name": "Create Farm Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmName\": \"Green Valley Plot\",\n  \"totalAreaAcres\": 5.5,\n  \"soilType\": \"Black Soil\",\n  \"irrigationType\": \"Drip Irrigation\",\n  \"location\": { \"district\": \"Pune\", \"state\": \"Maharashtra\" }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Crop Monitoring",
+      "item": [
+        {
+          "name": "Get All Crops",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/crops", "host": ["{{baseUrl}}"], "path": ["crops"] }
+          }
+        },
+        {
+          "name": "Log New Crop",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmId\": \"<FARM_ID>\",\n  \"cropName\": \"Wheat\",\n  \"variety\": \"Sharbati HD-2967\",\n  \"sowingDate\": \"2026-10-01\",\n  \"expectedHarvestDate\": \"2027-02-15\",\n  \"growthStage\": \"Vegetative\",\n  \"healthStatus\": \"Healthy\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/crops", "host": ["{{baseUrl}}"], "path": ["crops"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Soil Health Analysis",
+      "item": [
+        {
+          "name": "Instant Algorithmic Recommendation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phLevel\": 5.8,\n  \"nitrogenKgHa\": 220,\n  \"phosphorusKgHa\": 12,\n  \"potassiumKgHa\": 180,\n  \"moisturePercent\": 35\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/soil/analyze", "host": ["{{baseUrl}}"], "path": ["soil", "analyze"] }
+          }
+        },
+        {
+          "name": "Get Soil Test History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/soil", "host": ["{{baseUrl}}"], "path": ["soil"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Weather & Pest Alerts",
+      "item": [
+        {
+          "name": "Get Weather Forecast",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/weather/forecast?district=Pune", "host": ["{{baseUrl}}"], "path": ["weather", "forecast"], "query": [{ "key": "district", "value": "Pune" }] }
+          }
+        },
+        {
+          "name": "Get Active Pest Alerts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/weather/pest-alerts", "host": ["{{baseUrl}}"], "path": ["weather", "pest-alerts"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Admin Management",
+      "item": [
+        {
+          "name": "Get Admin Metrics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/metrics", "host": ["{{baseUrl}}"], "path": ["admin", "metrics"] }
+          }
+        }
+      ]
+    }
+  ]
+}
