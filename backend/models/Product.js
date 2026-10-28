@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 120,
     },
     category: {
       type: String,
@@ -16,19 +17,24 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+      max: 100000000,
     },
     unit: {
       type: String,
       default: 'kg', // e.g., '50 kg bag', '1 Liter bottle', 'piece'
+      maxlength: 60,
     },
     stock: {
       type: Number,
       required: true,
       default: 100,
+      min: 0,
+      max: 100000000,
     },
     description: {
       type: String,
       required: true,
+      maxlength: 500,
     },
     imageUrl: {
       type: String,

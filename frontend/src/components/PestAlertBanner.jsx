@@ -4,19 +4,23 @@ import { WeatherAPI } from '../services/api';
 const PestAlertBanner = () => {
   const [alerts, setAlerts] = useState([]);
   const [expandedAlert, setExpandedAlert] = useState(null);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
         const data = await WeatherAPI.getPestAlerts();
         setAlerts(data);
+        setLoadError('');
       } catch (err) {
         console.error('Pest alert fetch error', err);
+        setLoadError(err.response?.data?.message || 'Pest alerts are temporarily unavailable.');
       }
     };
     fetchAlerts();
   }, []);
 
+  if (loadError) return <div className="alert alert-warning py-2 small" role="status">{loadError}</div>;
   if (!alerts || alerts.length === 0) return null;
 
   return (

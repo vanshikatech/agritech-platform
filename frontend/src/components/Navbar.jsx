@@ -9,6 +9,7 @@ const Navbar = () => {
   const { lang, changeLanguage, t } = useLanguage();
   const { totalCount } = useCart();
   const navigate = useNavigate();
+  const roleLabel = user?.role === 'admin' ? 'Admin' : user?.role === 'expert' ? 'Expert' : 'Farmer';
 
   const handleLogout = () => {
     logout();
@@ -144,7 +145,7 @@ const Navbar = () => {
                   aria-expanded="false"
                 >
                   <i className="bi bi-person-circle me-1"></i>
-                  {user.name.split(' ')[0]} ({user.role === 'admin' ? 'Admin' : 'Farmer'})
+                  {user.name.split(' ')[0]} ({roleLabel})
                 </button>
                 <ul className="dropdown-menu dropdown-menu-end shadow">
                   <li>
@@ -155,6 +156,11 @@ const Navbar = () => {
                   <li>
                     <Link className="dropdown-item" to="/orders">
                       <i className="bi bi-box-seam me-2"></i> {t('orderHistory')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/settings">
+                      <i className="bi bi-gear me-2"></i> Profile &amp; settings
                     </Link>
                   </li>
                   <li><hr className="dropdown-divider" /></li>

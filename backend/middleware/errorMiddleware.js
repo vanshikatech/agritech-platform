@@ -7,12 +7,29 @@ const notFound = (req, res, next) => {
 
 // Central Error Handler Middleware
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  if (err.name === 'ValidationError' || err.name === 'CastError' || err.type === 'entity.parse.failed') statusCode = 400;
+  if (err.code === 11000) statusCode = 409;
+  if (err.message === 'Origin is not allowed by CORS') statusCode = 403;
+  if (err.name === 'MongooseServerSelectionError') statusCode = 503;
   res.status(statusCode).json({
     success: false,
-    message: err.message,
+    message: statusCode >= 500 && process.env.NODE_ENV === 'production'
+      ? 'The request could not be completed. Please try again later.'
+      : err.message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 };
 
-module.exports = { notFound, errorHandler };
+const sendControllerError = (res, err) => {
+  let statusCode = err.statusCode || 500;
+  if (err.name === 'ValidationError' || err.name === 'CastError') statusCode = 400;
+  if (err.code === 11000) statusCode = 409;
+  if (['MongooseServerSelectionError', 'MongoNetworkError'].includes(err.name)) statusCode = 503;
+  const message = statusCode >= 500 && process.env.NODE_ENV === 'production'
+    ? 'The request could not be completed. Please try again later.'
+    : err.message;
+  return res.status(statusCode).json({ success: false, message });
+};
+
+module.exports = { notFound, errorHandler, sendControllerError };

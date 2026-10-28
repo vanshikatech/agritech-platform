@@ -48,8 +48,9 @@ const LoginPage = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label small fw-semibold">Email Address</label>
+                <label htmlFor="login-email" className="form-label small fw-semibold">Email Address</label>
                 <input
+                  id="login-email"
                   type="email"
                   className="form-control"
                   placeholder="name@agritech.com"
@@ -60,8 +61,9 @@ const LoginPage = () => {
               </div>
 
               <div className="mb-4">
-                <label className="form-label small fw-semibold">Password</label>
+                <label htmlFor="login-password" className="form-label small fw-semibold">Password</label>
                 <input
+                  id="login-password"
                   type="password"
                   className="form-control"
                   placeholder="••••••••"

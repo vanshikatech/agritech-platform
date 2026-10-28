@@ -103,7 +103,7 @@ const LandingPage = () => {
                 <div className="fs-2 mb-3 text-success">🌦️</div>
                 <h5 className="fw-bold">Weather &amp; Pest Early Warnings</h5>
                 <p className="text-muted small mb-0">
-                  Local 5-day weather forecasts and early pest outbreak notifications with verified
+                  Open-Meteo 5-day weather forecasts and farmer-relevant pest outbreak notifications with
                   preventive remedies.
                 </p>
               </div>

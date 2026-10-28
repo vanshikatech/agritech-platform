@@ -15,6 +15,8 @@ const soilReportSchema = new mongoose.Schema(
     sampleName: {
       type: String,
       default: 'Main Plot Sample',
+      trim: true,
+      maxlength: 100,
     },
     phLevel: {
       type: Number,
@@ -25,22 +27,32 @@ const soilReportSchema = new mongoose.Schema(
     nitrogenKgHa: {
       type: Number,
       required: [true, 'Nitrogen (N) value is required'],
+      min: 0,
+      max: 10000,
     },
     phosphorusKgHa: {
       type: Number,
       required: [true, 'Phosphorus (P) value is required'],
+      min: 0,
+      max: 10000,
     },
     potassiumKgHa: {
       type: Number,
       required: [true, 'Potassium (K) value is required'],
+      min: 0,
+      max: 10000,
     },
     organicCarbonPercent: {
       type: Number,
       default: 0.5,
+      min: 0,
+      max: 100,
     },
     moisturePercent: {
       type: Number,
       default: 45,
+      min: 0,
+      max: 100,
     },
     healthGrade: {
       type: String,

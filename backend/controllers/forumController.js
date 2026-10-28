@@ -1,3 +1,4 @@
+const { sendControllerError } = require('../middleware/errorMiddleware');
 const ForumPost = require('../models/ForumPost');
 
 // @desc    Get all forum discussions and consultations
@@ -13,11 +14,13 @@ const getPosts = async (req, res) => {
     }
 
     if (search) {
+      const escapedSearch = search.trim().slice(0, 80).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { question: { $regex: search, $options: 'i' } },
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { question: { $regex: escapedSearch, $options: 'i' } },
       ];
     }
+    filter.moderationStatus = { $ne: 'Hidden' };
 
     const posts = await ForumPost.find(filter)
       .populate('userId', 'name role')
@@ -25,7 +28,7 @@ const getPosts = async (req, res) => {
 
     res.json({ success: true, count: posts.length, data: posts });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -36,9 +39,10 @@ const getPostById = async (req, res) => {
   try {
     const post = await ForumPost.findById(req.params.id).populate('userId', 'name role');
     if (!post) return res.status(404).json({ success: false, message: 'Discussion post not found' });
+    if (post.moderationStatus === 'Hidden') return res.status(404).json({ success: false, message: 'Discussion post not found' });
     res.json({ success: true, data: post });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -49,22 +53,22 @@ const createPost = async (req, res) => {
   try {
     const { title, question, cropCategory, tags } = req.body;
 
-    if (!title || !question) {
+    if (typeof title !== 'string' || typeof question !== 'string' || !title.trim() || !question.trim() || title.length > 160 || question.length > 5000) {
       return res.status(400).json({ success: false, message: 'Please provide both title and question' });
     }
 
     const post = await ForumPost.create({
       userId: req.user._id,
       authorName: req.user.name,
-      title,
-      question,
+      title: title.trim(),
+      question: question.trim(),
       cropCategory: cropCategory || 'General Agriculture',
       tags: tags || [],
     });
 
     res.status(201).json({ success: true, data: post });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -74,7 +78,7 @@ const createPost = async (req, res) => {
 const addReply = async (req, res) => {
   try {
     const { comment } = req.body;
-    if (!comment) {
+    if (typeof comment !== 'string' || !comment.trim() || comment.length > 5000) {
       return res.status(400).json({ success: false, message: 'Reply text cannot be empty' });
     }
 
@@ -87,7 +91,7 @@ const addReply = async (req, res) => {
       userId: req.user._id,
       authorName: req.user.name,
       authorRole: req.user.role,
-      comment,
+      comment: comment.trim(),
       isExpertResponse: req.user.role === 'admin' || req.user.role === 'expert',
     };
 
@@ -99,7 +103,7 @@ const addReply = async (req, res) => {
     await post.save();
     res.status(201).json({ success: true, data: post });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -111,7 +115,7 @@ const upvotePost = async (req, res) => {
     const post = await ForumPost.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
 
-    const alreadyUpvoted = post.upvotedBy.includes(req.user._id);
+    const alreadyUpvoted = post.upvotedBy.some((id) => id.toString() === req.user._id.toString());
 
     if (alreadyUpvoted) {
       post.upvotes = Math.max(0, post.upvotes - 1);
@@ -124,7 +128,60 @@ const upvotePost = async (req, res) => {
     await post.save();
     res.json({ success: true, data: post });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
+  }
+};
+
+const canManagePost = (post, user) => user.role === 'admin' || post.userId.toString() === user._id.toString();
+
+const updatePost = async (req, res) => {
+  try {
+    const post = await ForumPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, message: 'Discussion post not found' });
+    if (!canManagePost(post, req.user)) return res.status(403).json({ success: false, message: 'Only the author or an admin may edit this post' });
+    const { title, question, cropCategory, tags } = req.body;
+    if (title !== undefined) {
+      if (typeof title !== 'string' || !title.trim() || title.length > 160) return res.status(400).json({ success: false, message: 'Title must contain 1 to 160 characters' });
+      post.title = title.trim();
+    }
+    if (question !== undefined) {
+      if (typeof question !== 'string' || !question.trim() || question.length > 5000) return res.status(400).json({ success: false, message: 'Question must contain 1 to 5000 characters' });
+      post.question = question.trim();
+    }
+    if (cropCategory !== undefined) post.cropCategory = String(cropCategory).slice(0, 80);
+    if (tags !== undefined) post.tags = Array.isArray(tags) ? tags.filter((tag) => typeof tag === 'string').slice(0, 10).map((tag) => tag.slice(0, 40)) : [];
+    await post.save();
+    return res.json({ success: true, data: post });
+  } catch (error) {
+    return sendControllerError(res, error);
+  }
+};
+
+const deletePost = async (req, res) => {
+  try {
+    const post = await ForumPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, message: 'Discussion post not found' });
+    if (!canManagePost(post, req.user)) return res.status(403).json({ success: false, message: 'Only the author or an admin may delete this post' });
+    await post.deleteOne();
+    return res.json({ success: true, message: 'Discussion post deleted' });
+  } catch (error) {
+    return sendControllerError(res, error);
+  }
+};
+
+const reportPost = async (req, res) => {
+  try {
+    const reason = req.body.reason;
+    if (typeof reason !== 'string' || !reason.trim() || reason.length > 500) return res.status(400).json({ success: false, message: 'Please provide a report reason (up to 500 characters)' });
+    const post = await ForumPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, message: 'Discussion post not found' });
+    if (post.userId.toString() === req.user._id.toString()) return res.status(400).json({ success: false, message: 'You cannot report your own post' });
+    if (post.reports.some((report) => report.reporterId.toString() === req.user._id.toString() && report.status === 'Open')) return res.status(409).json({ success: false, message: 'You have already reported this post' });
+    post.reports.push({ reporterId: req.user._id, reason: reason.trim() });
+    await post.save();
+    return res.status(201).json({ success: true, message: 'Report sent to moderators' });
+  } catch (error) {
+    return sendControllerError(res, error);
   }
 };
 
@@ -134,4 +191,7 @@ module.exports = {
   createPost,
   addReply,
   upvotePost,
+  updatePost,
+  deletePost,
+  reportPost,
 };

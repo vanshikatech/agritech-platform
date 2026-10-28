@@ -13,7 +13,11 @@ const CommunityForum = () => {
   const [selectedCat, setSelectedCat] = useState('All');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showAskModal, setShowAskModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [reportingPostId, setReportingPostId] = useState('');
+  const [reportReason, setReportReason] = useState('');
 
   const [newPost, setNewPost] = useState({
     title: '',
@@ -28,8 +32,11 @@ const CommunityForum = () => {
     try {
       const data = await ForumAPI.getPosts(selectedCat === 'All' ? '' : selectedCat, search);
       setPosts(data || []);
+      setLoadError('');
     } catch (err) {
       console.error(err);
+      setPosts([]);
+      setLoadError(err.response?.data?.message || 'Could not load discussions. Check that the API is available.');
     } finally {
       setLoading(false);
     }
@@ -47,13 +54,30 @@ const CommunityForum = () => {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     try {
-      await ForumAPI.createPost(newPost);
+      if (editingPost) await ForumAPI.updatePost(editingPost._id, newPost);
+      else await ForumAPI.createPost(newPost);
       setShowAskModal(false);
+      setEditingPost(null);
       setNewPost({ title: '', cropCategory: 'General Agriculture', question: '' });
       fetchPosts();
     } catch (err) {
       alert('Failed to post question: ' + (err.response?.data?.message || err.message));
     }
+  };
+
+  const handleDeletePost = async (post) => {
+    if (!window.confirm(`Delete “${post.title}”?`)) return;
+    try { await ForumAPI.deletePost(post._id); await fetchPosts(); }
+    catch (err) { alert(err.response?.data?.message || 'Could not delete discussion.'); }
+  };
+
+  const handleReportPost = async (event, postId) => {
+    event.preventDefault();
+    try {
+      await ForumAPI.reportPost(postId, reportReason);
+      setReportingPostId(''); setReportReason('');
+      alert('Report sent to moderators.');
+    } catch (err) { alert(err.response?.data?.message || 'Could not submit report.'); }
   };
 
   const handleReplySubmit = async (postId) => {
@@ -71,13 +95,14 @@ const CommunityForum = () => {
 
   return (
     <div className="container py-4">
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
       {/* Header */}
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
           <h2 className="fw-bold mb-1">💬 {t('community')}</h2>
           <p className="text-muted small mb-0">Ask agronomy queries, share pest remedies, and consult certified experts</p>
         </div>
-        <button className="btn btn-success rounded-pill px-4 shadow-sm" onClick={() => setShowAskModal(true)}>
+        <button className="btn btn-success rounded-pill px-4 shadow-sm" onClick={() => { setEditingPost(null); setNewPost({ title: '', cropCategory: 'General Agriculture', question: '' }); setShowAskModal(true); }}>
           <i className="bi bi-question-circle me-1"></i> {t('createPost')}
         </button>
       </div>
@@ -144,6 +169,23 @@ const CommunityForum = () => {
 
               <p className="text-secondary mt-2 mb-3">{post.question}</p>
 
+              <div className="d-flex flex-wrap gap-2">
+                <button type="button" className="btn btn-sm btn-outline-success" onClick={async () => {
+                  try { await ForumAPI.upvotePost(post._id); await fetchPosts(); }
+                  catch (err) { alert(err.response?.data?.message || 'Could not update vote.'); }
+                }}>Helpful · {post.upvotes || 0}</button>
+                {(user?._id === String(post.userId?._id || post.userId) || user?.role === 'admin') && <>
+                  <button type="button" className="btn btn-sm btn-outline-success" onClick={() => { setEditingPost(post); setNewPost({ title: post.title, cropCategory: post.cropCategory, question: post.question }); setShowAskModal(true); }}>Edit</button>
+                  <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePost(post)}>Delete</button>
+                </>}
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => { setReportingPostId(reportingPostId === post._id ? '' : post._id); setReportReason(''); }}>Report</button>
+              </div>
+              {reportingPostId === post._id && <form className="mt-2 d-flex gap-2" onSubmit={(event) => handleReportPost(event, post._id)}>
+                <label className="visually-hidden" htmlFor={`report-${post._id}`}>Reason for reporting this post</label>
+                <input id={`report-${post._id}`} className="form-control form-control-sm" value={reportReason} onChange={(event) => setReportReason(event.target.value)} maxLength={500} placeholder="Why should moderators review this?" required />
+                <button className="btn btn-sm btn-danger" type="submit">Send</button>
+              </form>}
+
               {/* Replies Section */}
               <div className="mt-3 pt-3 border-top">
                 <h6 className="fw-bold small text-muted mb-2">
@@ -203,8 +245,8 @@ const CommunityForum = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 border-0 shadow">
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold text-success">{t('askQuestion')}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowAskModal(false)}></button>
+                <h5 className="modal-title fw-bold text-success">{editingPost ? 'Edit discussion' : t('askQuestion')}</h5>
+                <button type="button" className="btn-close" aria-label="Close" onClick={() => { setShowAskModal(false); setEditingPost(null); }}></button>
               </div>
               <form onSubmit={handleCreatePost}>
                 <div className="modal-body">
@@ -246,11 +288,11 @@ const CommunityForum = () => {
                   </div>
                 </div>
                 <div className="modal-footer border-0 pt-0">
-                  <button type="button" className="btn btn-light rounded-pill" onClick={() => setShowAskModal(false)}>
+                  <button type="button" className="btn btn-light rounded-pill" onClick={() => { setShowAskModal(false); setEditingPost(null); }}>
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-success rounded-pill px-4">
-                    Post Question
+                    {editingPost ? 'Save changes' : 'Post Question'}
                   </button>
                 </div>
               </form>

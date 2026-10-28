@@ -1,16 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {
-    const saved = localStorage.getItem('agritech_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { user } = useAuth();
+  const storageKey = user?._id ? `agritech_cart_${user._id}` : 'agritech_cart_guest';
+  const [cartItems, setCartItems] = useState([]);
+  const [loadedKey, setLoadedKey] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem('agritech_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      setCartItems(Array.isArray(saved) ? saved : []);
+    } catch {
+      setCartItems([]);
+    }
+    setLoadedKey(storageKey);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (loadedKey === storageKey) {
+      try { localStorage.setItem(storageKey, JSON.stringify(cartItems)); } catch { /* Storage may be disabled or full. */ }
+    }
+  }, [cartItems, loadedKey, storageKey]);
 
   const addToCart = (product, quantity = 1) => {
     setCartItems((prevItems) => {

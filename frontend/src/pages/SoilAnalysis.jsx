@@ -7,6 +7,7 @@ const SoilAnalysis = () => {
   const [reports, setReports] = useState([]);
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Interactive Live Analyzer State
   const [previewData, setPreviewData] = useState({
@@ -20,17 +21,26 @@ const SoilAnalysis = () => {
   const [instantAdvice, setInstantAdvice] = useState(null);
   const [selectedFarmId, setSelectedFarmId] = useState('');
   const [sampleName, setSampleName] = useState('North Field Core Sample');
+  const [editingReport, setEditingReport] = useState(null);
+
+  const chartPoints = (field, maximum) => reports.slice(0, 8).reverse().map((report, index, list) => {
+    const x = list.length === 1 ? 300 : 30 + (index * 540) / (list.length - 1);
+    const y = 158 - Math.min(Number(report[field]) / maximum, 1) * 125;
+    return `${x},${y}`;
+  }).join(' ');
 
   const loadData = async () => {
     try {
       const [soilRes, farmRes] = await Promise.all([SoilAPI.getAll(), FarmAPI.getAll()]);
       setReports(soilRes || []);
       setFarms(farmRes || []);
+      setLoadError('');
       if (farmRes && farmRes.length > 0) {
         setSelectedFarmId(farmRes[0]._id);
       }
     } catch (err) {
       console.error(err);
+      setLoadError(err.response?.data?.message || 'Could not load soil reports. Check that the API is available.');
     } finally {
       setLoading(false);
     }
@@ -68,12 +78,11 @@ const SoilAnalysis = () => {
     }
 
     try {
-      await SoilAPI.create({
-        farmId: selectedFarmId,
-        sampleName,
-        ...previewData,
-      });
-      alert('Soil Test Report saved successfully!');
+      const payload = { farmId: selectedFarmId, sampleName, ...previewData };
+      if (editingReport) await SoilAPI.update(editingReport._id, payload);
+      else await SoilAPI.create(payload);
+      setEditingReport(null);
+      alert(editingReport ? 'Soil report updated successfully.' : 'Soil Test Report saved successfully!');
       loadData();
     } catch (err) {
       alert('Failed to save soil test report');
@@ -82,6 +91,7 @@ const SoilAnalysis = () => {
 
   return (
     <div className="container py-4">
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
       <div className="mb-4">
         <h2 className="fw-bold mb-1">🧪 {t('soilHealth')}</h2>
         <p className="text-muted small mb-0">
@@ -195,7 +205,7 @@ const SoilAnalysis = () => {
 
             {/* Save to Database Form */}
             <form onSubmit={handleSaveReport} className="mt-4 pt-3 border-top">
-              <h6 className="fw-bold mb-2">Save This Soil Profile to Farm</h6>
+              <h6 className="fw-bold mb-2">{editingReport ? 'Edit Soil Report' : 'Save This Soil Profile to Farm'}</h6>
               <div className="row g-2 mb-2">
                 <div className="col-md-6">
                   <select
@@ -203,6 +213,7 @@ const SoilAnalysis = () => {
                     value={selectedFarmId}
                     onChange={(e) => setSelectedFarmId(e.target.value)}
                     required
+                    disabled={Boolean(editingReport)}
                   >
                     {farms.length === 0 && <option value="">No farms available</option>}
                     {farms.map((f) => (
@@ -228,8 +239,9 @@ const SoilAnalysis = () => {
                 className="btn btn-success btn-sm rounded-pill px-4"
                 disabled={farms.length === 0}
               >
-                💾 Save Test to Farm History
+                {editingReport ? 'Save Changes' : '💾 Save Test to Farm History'}
               </button>
+              {editingReport && <button type="button" className="btn btn-link btn-sm ms-2" onClick={() => setEditingReport(null)}>Cancel edit</button>}
             </form>
           </div>
         </div>
@@ -299,6 +311,18 @@ const SoilAnalysis = () => {
         ) : reports.length === 0 ? (
           <p className="text-muted small mb-0">No past reports saved yet.</p>
         ) : (
+          <>
+          <figure className="mb-4" aria-labelledby="soil-chart-title">
+            <figcaption id="soil-chart-title" className="fw-semibold small mb-2">Recent nutrient measurements (kg/ha)</figcaption>
+            <svg viewBox="0 0 600 190" role="img" aria-label="Line chart comparing nitrogen, phosphorus, and potassium measurements across recent soil reports" className="w-100" style={{ minHeight: 150 }}>
+              {[33, 95, 158].map((y) => <line key={y} x1="30" x2="570" y1={y} y2={y} stroke="#cbd5c9" strokeDasharray="4 4" />)}
+              <polyline points={chartPoints('nitrogenKgHa', 650)} fill="none" stroke="#2f6b4f" strokeWidth="3" />
+              <polyline points={chartPoints('phosphorusKgHa', 45)} fill="none" stroke="#bd8b34" strokeWidth="3" />
+              <polyline points={chartPoints('potassiumKgHa', 350)} fill="none" stroke="#397f91" strokeWidth="3" />
+              <text x="35" y="20" fill="#2f6b4f" fontSize="12">N</text><text x="58" y="20" fill="#bd8b34" fontSize="12">P</text><text x="81" y="20" fill="#397f91" fontSize="12">K</text>
+            </svg>
+            <p className="small text-muted mb-0">Each nutrient is scaled to its chart range (N 0–650, P 0–45, K 0–350) for comparison.</p>
+          </figure>
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
               <thead className="table-light small">
@@ -311,6 +335,7 @@ const SoilAnalysis = () => {
                   <th>K (kg/ha)</th>
                   <th>Health Status</th>
                   <th>Date Tested</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -326,11 +351,26 @@ const SoilAnalysis = () => {
                       <span className="badge bg-secondary">{r.healthGrade}</span>
                     </td>
                     <td className="small text-muted">{new Date(r.testedAt).toLocaleDateString()}</td>
+                    <td className="text-nowrap">
+                      <button type="button" className="btn btn-sm btn-outline-success me-1" onClick={() => {
+                        setEditingReport(r);
+                        setSelectedFarmId(r.farmId?._id || '');
+                        setSampleName(r.sampleName || '');
+                        setPreviewData({ phLevel: r.phLevel, nitrogenKgHa: r.nitrogenKgHa, phosphorusKgHa: r.phosphorusKgHa, potassiumKgHa: r.potassiumKgHa, moisturePercent: r.moisturePercent });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}>Edit</button>
+                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={async () => {
+                        if (!window.confirm('Delete this soil report?')) return;
+                        try { await SoilAPI.delete(r._id); await loadData(); }
+                        catch (err) { alert(err.response?.data?.message || 'Could not delete soil report.'); }
+                      }}>Delete</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

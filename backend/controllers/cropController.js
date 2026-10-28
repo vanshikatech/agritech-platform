@@ -1,3 +1,4 @@
+const { sendControllerError } = require('../middleware/errorMiddleware');
 const Crop = require('../models/Crop');
 const Farm = require('../models/Farm');
 
@@ -16,7 +17,7 @@ const getCrops = async (req, res) => {
     const crops = await Crop.find(filter).populate('farmId', 'farmName location').sort({ createdAt: -1 });
     res.json({ success: true, count: crops.length, data: crops });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -36,7 +37,7 @@ const getCropById = async (req, res) => {
 
     res.json({ success: true, data: crop });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -49,6 +50,12 @@ const createCrop = async (req, res) => {
 
     if (!farmId || !cropName || !sowingDate || !expectedHarvestDate) {
       return res.status(400).json({ success: false, message: 'Please provide farmId, cropName, sowingDate, and expectedHarvestDate' });
+    }
+    const startDate = new Date(sowingDate);
+    const harvestDate = new Date(expectedHarvestDate);
+    const cultivatedArea = areaCultivatedAcres === undefined ? 1 : Number(areaCultivatedAcres);
+    if (!Number.isFinite(cultivatedArea) || cultivatedArea <= 0 || !Number.isFinite(startDate.getTime()) || !Number.isFinite(harvestDate.getTime()) || harvestDate < startDate) {
+      return res.status(400).json({ success: false, message: 'Provide a positive cultivated area and valid harvest date on or after sowing.' });
     }
 
     const farm = await Farm.findById(farmId);
@@ -65,7 +72,7 @@ const createCrop = async (req, res) => {
       farmId,
       cropName,
       variety: variety || 'Standard',
-      areaCultivatedAcres: areaCultivatedAcres || 1,
+      areaCultivatedAcres: cultivatedArea,
       sowingDate,
       expectedHarvestDate,
       growthStage: growthStage || 'Sowing',
@@ -75,7 +82,7 @@ const createCrop = async (req, res) => {
 
     res.status(201).json({ success: true, data: crop });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -93,14 +100,21 @@ const updateCrop = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to modify this crop' });
     }
 
-    crop = await Crop.findByIdAndUpdate(req.params.id, req.body, {
+    const allowedUpdates = ['cropName', 'variety', 'areaCultivatedAcres', 'sowingDate', 'expectedHarvestDate', 'growthStage', 'healthStatus', 'expectedYieldKg', 'notes'];
+    const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowedUpdates.includes(key)));
+    const sowingDate = updates.sowingDate === undefined ? crop.sowingDate : new Date(updates.sowingDate);
+    const harvestDate = updates.expectedHarvestDate === undefined ? crop.expectedHarvestDate : new Date(updates.expectedHarvestDate);
+    if (!Number.isFinite(sowingDate.getTime()) || !Number.isFinite(harvestDate.getTime()) || harvestDate < sowingDate) {
+      return res.status(400).json({ success: false, message: 'Expected harvest date must be valid and on or after sowing.' });
+    }
+    crop = await Crop.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true,
     });
 
     res.json({ success: true, data: crop });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -121,7 +135,7 @@ const deleteCrop = async (req, res) => {
     await crop.deleteOne();
     res.json({ success: true, message: 'Crop record deleted successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { AuthAPI } from '../services/api';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -15,6 +16,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsed = JSON.parse(savedUser);
         setUser(parsed);
+        // Set Axios default authorization header
         if (parsed.token) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
         }
@@ -34,47 +36,11 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.data.token}`;
         return { success: true };
       }
+      return { success: false, message: 'Login failed. Please check your credentials.' };
     } catch (err) {
-      // Check if user was registered in demo local storage:
-      const registeredList = JSON.parse(localStorage.getItem('agritech_mock_users') || '[]');
-      const found = registeredList.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-      );
-      if (found) {
-        setUser(found.user);
-        localStorage.setItem('agritech_user', JSON.stringify(found.user));
-        return { success: true };
-      }
-
-      // Pre-configured evaluation accounts
-      if (email === 'admin@agritech.com' && password === 'admin123') {
-        const mockAdmin = {
-          _id: 'mock_admin_1',
-          name: 'Dr. Ramesh Sharma (Admin & Agronomist)',
-          email: 'admin@agritech.com',
-          role: 'admin',
-          token: 'mock_jwt_token_admin',
-        };
-        setUser(mockAdmin);
-        localStorage.setItem('agritech_user', JSON.stringify(mockAdmin));
-        return { success: true };
-      } else if (email === 'farmer@agritech.com' && password === 'farmer123') {
-        const mockFarmer = {
-          _id: 'mock_farmer_1',
-          name: 'Suresh Patil',
-          email: 'farmer@agritech.com',
-          role: 'farmer',
-          location: { state: 'Maharashtra', district: 'Pune', village: 'Baramati' },
-          token: 'mock_jwt_token_farmer',
-        };
-        setUser(mockFarmer);
-        localStorage.setItem('agritech_user', JSON.stringify(mockFarmer));
-        return { success: true };
-      }
-
       return {
         success: false,
-        message: err.response?.data?.message || 'Invalid email or password. Please try again.',
+        message: err.response?.data?.message || 'Cannot reach the AgriTech server. Check that the backend is running.',
       };
     }
   };
@@ -88,38 +54,24 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.data.token}`;
         return { success: true };
       }
+      return { success: false, message: 'Registration failed. Please review your details.' };
     } catch (err) {
-      // Resilient fallback for demo when backend is offline or waking up:
-      const fallbackUser = {
-        _id: 'user_' + Date.now(),
-        name: userData.name,
-        email: userData.email,
-        role: userData.role || 'farmer',
-        language: userData.language || 'en',
-        location: userData.location || { state: 'Maharashtra', district: 'Pune', village: '' },
-        token: 'mock_jwt_token_' + Date.now(),
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Registration failed. Try again.',
       };
+    }
+  };
 
-      // Store credentials so the newly registered user can log in again anytime
-      const registeredList = JSON.parse(localStorage.getItem('agritech_mock_users') || '[]');
-      // Check if email already registered in demo storage
-      const exists = registeredList.some(
-        (u) => u.email.toLowerCase() === userData.email.toLowerCase()
-      );
-      if (exists) {
-        return { success: false, message: 'User already exists with this email' };
-      }
-
-      registeredList.push({
-        email: userData.email,
-        password: userData.password,
-        user: fallbackUser,
-      });
-      localStorage.setItem('agritech_mock_users', JSON.stringify(registeredList));
-
-      setUser(fallbackUser);
-      localStorage.setItem('agritech_user', JSON.stringify(fallbackUser));
+  const updateProfile = async (profileData) => {
+    try {
+      const updatedUser = await AuthAPI.updateProfile(profileData);
+      setUser(updatedUser);
+      localStorage.setItem('agritech_user', JSON.stringify(updatedUser));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${updatedUser.token}`;
       return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Could not update your profile.' };
     }
   };
 
@@ -130,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -11,11 +11,13 @@ const farmSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please provide farm name'],
       trim: true,
+      maxlength: 100,
     },
     totalAreaAcres: {
       type: Number,
       required: [true, 'Please provide total farm area in acres'],
       min: [0.1, 'Farm area must be greater than 0'],
+      max: [1000000, 'Farm area is too large'],
     },
     soilType: {
       type: String,
@@ -28,14 +30,15 @@ const farmSchema = new mongoose.Schema(
       default: 'Drip Irrigation',
     },
     location: {
-      state: { type: String, default: 'Maharashtra' },
-      district: { type: String, default: 'Pune' },
-      village: { type: String, default: '' },
+      state: { type: String, trim: true, default: 'Maharashtra' },
+      district: { type: String, trim: true, default: 'Pune' },
+      village: { type: String, trim: true, default: '' },
       pincode: { type: String, default: '' },
     },
     notes: {
       type: String,
       default: '',
+      maxlength: 2000,
     },
   },
   {

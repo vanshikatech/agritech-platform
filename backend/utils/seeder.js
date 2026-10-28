@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const bcrypt = require('bcryptjs');
 
 dotenv.config({ path: __dirname + '/../.env' });
 
@@ -14,6 +13,9 @@ const ForumPost = require('../models/ForumPost');
 
 const seedData = async () => {
   try {
+    if (process.env.SEED_RESET !== 'true') {
+      throw new Error('This demo seeder clears AgriTech collections. Set SEED_RESET=true only when you intend to replace the current data.');
+    }
     const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/agritech_db';
     await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB for seeding...');
@@ -28,14 +30,12 @@ const seedData = async () => {
     await ForumPost.deleteMany();
 
     // 1. Seed Users
-    const salt = await bcrypt.genSalt(10);
-    const adminPassword = await bcrypt.hash('admin123', salt);
-    const farmerPassword = await bcrypt.hash('farmer123', salt);
+    // User's pre-save hook hashes plaintext passwords. Do not pre-hash here.
 
     const admin = await User.create({
       name: 'Dr. Ramesh Sharma (Admin & Agronomist)',
       email: 'admin@agritech.com',
-      password: adminPassword,
+      password: 'admin123',
       role: 'admin',
       phone: '+91 9876543210',
       language: 'en',
@@ -45,7 +45,7 @@ const seedData = async () => {
     const farmer = await User.create({
       name: 'Suresh Patil',
       email: 'farmer@agritech.com',
-      password: farmerPassword,
+      password: 'farmer123',
       role: 'farmer',
       phone: '+91 9123456780',
       language: 'hi',

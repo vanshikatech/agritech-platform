@@ -3,6 +3,9 @@ const User = require('../models/User');
 
 // Protect routes - JWT verification
 const protect = async (req, res, next) => {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    return res.status(500).json({ success: false, message: 'Authentication is not configured. Set a JWT_SECRET of at least 32 characters.' });
+  }
   let token;
 
   if (
@@ -11,7 +14,7 @@ const protect = async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'agritech_super_secret_jwt_key_2026');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = await User.findById(decoded.id).select('-password');
       if (!req.user) {

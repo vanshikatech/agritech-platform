@@ -6,6 +6,7 @@ const weatherPestAlertSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 160,
     },
     alertType: {
       type: String,
@@ -29,14 +30,17 @@ const weatherPestAlertSchema = new mongoose.Schema(
     symptoms: {
       type: String,
       default: '',
+      maxlength: 2000,
     },
     preventiveAction: {
       type: String,
       required: true,
+      maxlength: 1000,
     },
     recommendedPesticideOrRemedy: {
       type: String,
       default: '',
+      maxlength: 1000,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

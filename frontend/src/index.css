@@ -1,19 +1,23 @@
 :root {
-  --primary-green: #1b5e20;
-  --primary-green-light: #2e7d32;
-  --accent-gold: #f59e0b;
-  --accent-blue: #0284c7;
-  --bg-light: #f8fafc;
-  --card-bg: #ffffff;
-  --text-dark: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --bg-light: #e9efe8;
+  --card-bg: #e9efe8;
+  --primary-green: #2f6b4f;
+  --primary-green-light: #3f805f;
+  --accent-gold: #b17b28;
+  --accent-blue: #397f91;
+  --text-dark: #24352b;
+  --text-muted: #627267;
+  --border-color: #d8e1d7;
+  --shadow-raised: 7px 7px 16px rgba(128, 145, 127, .22), -7px -7px 16px rgba(255, 255, 255, .82);
+  --shadow-inset: inset 3px 3px 8px rgba(128, 145, 127, .18), inset -3px -3px 8px rgba(255, 255, 255, .82);
+  --radius-card: 20px;
+  --radius-control: 12px;
 }
 
 body {
   margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-light);
+  background: radial-gradient(ellipse at 10% 0%, #f1f5ef 0, var(--bg-light) 55%);
   color: var(--text-dark);
   -webkit-font-smoothing: antialiased;
 }
@@ -36,19 +40,19 @@ body {
 
 /* Agri cards & utilities */
 .agri-card {
-  background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(255,255,255,.62);
+  box-shadow: var(--shadow-raised);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .agri-card:hover {
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 9px 9px 20px rgba(128, 145, 127, .25), -8px -8px 18px rgba(255, 255, 255, .9);
 }
 
 .agri-header {
-  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+  background: linear-gradient(135deg, #204b38 0%, #3f805f 100%);
   color: white;
 }
 
@@ -62,4 +66,44 @@ body {
 .growth-progress-bar {
   height: 8px;
   border-radius: 4px;
+}
+
+.card, .modal-content {
+  color: var(--text-dark);
+  background-color: var(--card-bg);
+  border-color: rgba(255,255,255,.68) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-raised);
+}
+
+.form-control, .form-select {
+  color: var(--text-dark);
+  background-color: var(--bg-light);
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-inset);
+}
+
+.form-control:focus, .form-select:focus {
+  color: var(--text-dark);
+  background-color: #edf2eb;
+  border-color: #6f987c;
+  box-shadow: var(--shadow-inset), 0 0 0 .2rem rgba(47,107,79,.16);
+}
+
+.btn-success {
+  --bs-btn-bg: var(--primary-green);
+  --bs-btn-border-color: var(--primary-green);
+  --bs-btn-hover-bg: #204b38;
+  --bs-btn-hover-border-color: #204b38;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #397f91;
+  outline-offset: 3px;
+}
+
+@media (max-width: 575.98px) {
+  .main-content { padding-bottom: 1.5rem; }
+  .card { --bs-card-spacer-x: 1rem; }
 }

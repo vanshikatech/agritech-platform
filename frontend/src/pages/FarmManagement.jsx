@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FarmAPI } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { findIndianCity, INDIAN_CITIES, INDIAN_STATES, validateIndianCityState } from '../utils/indianCityState';
 
 const FarmManagement = () => {
   const { t } = useLanguage();
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     farmName: '',
@@ -24,6 +26,7 @@ const FarmManagement = () => {
       setFarms(data || []);
     } catch (err) {
       console.error(err);
+      setLoadError(err.response?.data?.message || 'Could not load farms. Check that the API is available.');
     } finally {
       setLoading(false);
     }
@@ -34,11 +37,30 @@ const FarmManagement = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'district') {
+      const city = findIndianCity(value);
+      setFormData((current) => ({
+        ...current,
+        district: value,
+        state: city?.states.length === 1 ? city.states[0] : '',
+      }));
+      return;
+    }
+    setFormData((current) => ({ ...current, [name]: value }));
   };
+
+  const cityMatch = findIndianCity(formData.district);
+  const cityStateValidation = validateIndianCityState(formData.district, formData.state);
+  const locationError = formData.district.trim() && !formData.state
+    ? cityMatch?.states.length > 1
+      ? `Select the correct state for ${cityMatch.name}: ${cityMatch.states.join(' or ')}.`
+      : 'Select the farm state.'
+    : !cityStateValidation.valid ? cityStateValidation.message : '';
 
   const handleCreateFarm = async (e) => {
     e.preventDefault();
+    if (locationError) return;
     try {
       const payload = {
         farmName: formData.farmName,
@@ -83,6 +105,7 @@ const FarmManagement = () => {
 
   return (
     <div className="container py-4">
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="fw-bold mb-1">🌾 {t('farms')}</h2>
@@ -224,12 +247,24 @@ const FarmManagement = () => {
 
                   <div className="row g-2 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-semibold">District</label>
-                      <input type="text" name="district" className="form-control" value={formData.district} onChange={handleChange} />
+                      <label className="form-label small fw-semibold" htmlFor="farm-city">City / District</label>
+                      <input id="farm-city" type="text" name="district" className="form-control" list="indian-farm-cities" autoComplete="off" maxLength={80} value={formData.district} onChange={handleChange} aria-describedby="farm-location-help" required />
+                      <datalist id="indian-farm-cities">{INDIAN_CITIES.flatMap((city) => [city.name, ...(city.aliases || [])]).map((city) => <option value={city} key={city} />)}</datalist>
                     </div>
                     <div className="col-6">
                       <label className="form-label small fw-semibold">Village / Taluka</label>
                       <input type="text" name="village" className="form-control" placeholder="Village" value={formData.village} onChange={handleChange} />
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold" htmlFor="farm-state">State / Union Territory</label>
+                    <select id="farm-state" name="state" className="form-select" value={formData.state} onChange={handleChange} required aria-describedby="farm-location-help">
+                      <option value="">Select state / union territory</option>
+                      {INDIAN_STATES.map((state) => <option value={state} key={state}>{state}</option>)}
+                    </select>
+                    <div id="farm-location-help" className={`form-text ${locationError ? 'text-danger' : 'text-success'}`} aria-live="polite">
+                      {locationError || (cityMatch?.states.length === 1 ? `State set to ${cityMatch.states[0]}. You can verify or correct it.` : cityMatch?.states.length > 1 ? `This city exists in multiple states: ${cityMatch.states.join(' and ')}. Choose the correct one.` : 'Choose the state manually when the city is not in the suggestions.')}
                     </div>
                   </div>
 
@@ -240,7 +275,7 @@ const FarmManagement = () => {
                 </div>
                 <div className="modal-footer border-0 pt-0">
                   <button type="button" className="btn btn-light rounded-pill" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-success rounded-pill px-4">Save Farm Profile</button>
+                  <button type="submit" className="btn btn-success rounded-pill px-4" disabled={Boolean(locationError)}>Save Farm Profile</button>
                 </div>
               </form>
             </div>

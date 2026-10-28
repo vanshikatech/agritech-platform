@@ -6,8 +6,16 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000/api", "type": "string" },
-    { "key": "authToken", "value": "", "type": "string" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
   ],
   "item": [
     {
@@ -17,32 +25,87 @@
           "name": "Register Farmer",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Suresh Patil\",\n  \"email\": \"farmer@agritech.com\",\n  \"password\": \"farmer123\",\n  \"role\": \"farmer\",\n  \"phone\": \"+91 9123456780\",\n  \"language\": \"hi\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
           }
         },
         {
           "name": "Login User",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"farmer@agritech.com\",\n  \"password\": \"farmer123\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
-          }
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set(\"authToken\", pm.response.json().data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get User Profile",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
-            "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            }
           }
         }
       ]
@@ -54,8 +117,21 @@
           "name": "Get My Farms",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
-            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/farms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "farms"
+              ]
+            }
           }
         },
         {
@@ -63,14 +139,28 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"farmName\": \"Green Valley Plot\",\n  \"totalAreaAcres\": 5.5,\n  \"soilType\": \"Black Soil\",\n  \"irrigationType\": \"Drip Irrigation\",\n  \"location\": { \"district\": \"Pune\", \"state\": \"Maharashtra\" }\n}"
             },
-            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+            "url": {
+              "raw": "{{baseUrl}}/farms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "farms"
+              ]
+            }
           }
         }
       ]
@@ -82,8 +172,21 @@
           "name": "Get All Crops",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
-            "url": { "raw": "{{baseUrl}}/crops", "host": ["{{baseUrl}}"], "path": ["crops"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/crops",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "crops"
+              ]
+            }
           }
         },
         {
@@ -91,14 +194,28 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"farmId\": \"<FARM_ID>\",\n  \"cropName\": \"Wheat\",\n  \"variety\": \"Sharbati HD-2967\",\n  \"sowingDate\": \"2026-10-01\",\n  \"expectedHarvestDate\": \"2027-02-15\",\n  \"growthStage\": \"Vegetative\",\n  \"healthStatus\": \"Healthy\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/crops", "host": ["{{baseUrl}}"], "path": ["crops"] }
+            "url": {
+              "raw": "{{baseUrl}}/crops",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "crops"
+              ]
+            }
           }
         }
       ]
@@ -110,20 +227,138 @@
           "name": "Instant Algorithmic Recommendation",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"phLevel\": 5.8,\n  \"nitrogenKgHa\": 220,\n  \"phosphorusKgHa\": 12,\n  \"potassiumKgHa\": 180,\n  \"moisturePercent\": 35\n}"
             },
-            "url": { "raw": "{{baseUrl}}/soil/analyze", "host": ["{{baseUrl}}"], "path": ["soil", "analyze"] }
+            "url": {
+              "raw": "{{baseUrl}}/soil/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soil",
+                "analyze"
+              ]
+            }
           }
         },
         {
           "name": "Get Soil Test History",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
-            "url": { "raw": "{{baseUrl}}/soil", "host": ["{{baseUrl}}"], "path": ["soil"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soil"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create soil measurement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmId\": \"{{farmId}}\",\n  \"sampleName\": \"North field\",\n  \"phLevel\": 6.8,\n  \"nitrogenKgHa\": 260,\n  \"phosphorusKgHa\": 18,\n  \"potassiumKgHa\": 220\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/soil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soil"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit soil measurement",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sampleName\": \"Updated sample\",\n  \"phLevel\": 6.9,\n  \"nitrogenKgHa\": 270,\n  \"phosphorusKgHa\": 20,\n  \"potassiumKgHa\": 225\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/soil/{{soilReportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soil",
+                "{{soilReportId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete soil measurement",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/soil/{{soilReportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "soil",
+                "{{soilReportId}}"
+              ]
+            }
           }
         }
       ]
@@ -135,14 +370,38 @@
           "name": "Get Weather Forecast",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/weather/forecast?district=Pune", "host": ["{{baseUrl}}"], "path": ["weather", "forecast"], "query": [{ "key": "district", "value": "Pune" }] }
+            "url": {
+              "raw": "{{baseUrl}}/weather/forecast?district=Pune",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "weather",
+                "forecast"
+              ],
+              "query": [
+                {
+                  "key": "district",
+                  "value": "Pune"
+                }
+              ]
+            }
           }
         },
         {
           "name": "Get Active Pest Alerts",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/weather/pest-alerts", "host": ["{{baseUrl}}"], "path": ["weather", "pest-alerts"] }
+            "url": {
+              "raw": "{{baseUrl}}/weather/pest-alerts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "weather",
+                "pest-alerts"
+              ]
+            }
           }
         }
       ]
@@ -154,8 +413,658 @@
           "name": "Get Admin Metrics",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/metrics", "host": ["{{baseUrl}}"], "path": ["admin", "metrics"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "metrics"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List users and experts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign expert role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"expert\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "role"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get activity log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/activity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "activity"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List open forum reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/forum/reports",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "forum",
+                "reports"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hide reported forum post",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moderationStatus\": \"Hidden\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/forum/{{postId}}/moderation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "forum",
+                "{{postId}}",
+                "moderation"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Broadcast pest alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Example pest warning\",\n  \"alertType\": \"Pest Outbreak\",\n  \"severity\": \"Moderate\",\n  \"region\": {\n    \"state\": \"Maharashtra\",\n    \"district\": \"Pune\"\n  },\n  \"affectedCrops\": [\n    \"Wheat\"\n  ],\n  \"preventiveAction\": \"Inspect affected crops and consult a local agronomist.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/weather/pest-alerts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "weather",
+                "pest-alerts"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Resources & Orders",
+      "item": [
+        {
+          "name": "Browse resource products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/resources/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resources",
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create resource product (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example seed\",\n  \"category\": \"Seeds\",\n  \"price\": 500,\n  \"unit\": \"10 kg bag\",\n  \"stock\": 20,\n  \"description\": \"Replace this example with product details.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/resources/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resources",
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete resource product (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/resources/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resources",
+                "products",
+                "{{productId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Place order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderItems\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"shippingAddress\": {\n    \"address\": \"Farm road\",\n    \"village\": \"Village\",\n    \"district\": \"Pune\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"411001\",\n    \"phone\": \"9999999999\"\n  },\n  \"paymentMethod\": \"Cash on Delivery (COD)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get my orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/my-orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "my-orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get all orders (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "all"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update order status (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderStatus\": \"Confirmed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get full resource catalog (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/resources/admin/catalog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resources",
+                "admin",
+                "catalog"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update resource product (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example seed\",\n  \"category\": \"Seeds\",\n  \"price\": 500,\n  \"unit\": \"10 kg bag\",\n  \"stock\": 20,\n  \"description\": \"Replace this example with product details.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/resources/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resources",
+                "products",
+                "{{productId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Community & Consultation",
+      "item": [
+        {
+          "name": "List forum posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/forum",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create consultation question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Crop health question\",\n  \"cropCategory\": \"General Agriculture\",\n  \"question\": \"Describe the crop symptoms and growing conditions.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forum",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reply as farmer or expert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Add a helpful, evidence-based response.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forum/{{postId}}/reply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum",
+                "{{postId}}",
+                "reply"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Toggle helpful vote",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forum/{{postId}}/upvote",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum",
+                "{{postId}}",
+                "upvote"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Report a post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Explain the moderation concern.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forum/{{postId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum",
+                "{{postId}}",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit a post (author/admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated title\",\n  \"question\": \"Updated details.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forum/{{postId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum",
+                "{{postId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete a post (author/admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forum/{{postId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forum",
+                "{{postId}}"
+              ]
+            }
           }
         }
       ]

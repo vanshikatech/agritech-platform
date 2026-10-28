@@ -1,3 +1,4 @@
+const { sendControllerError } = require('../middleware/errorMiddleware');
 const SoilReport = require('../models/SoilReport');
 const Farm = require('../models/Farm');
 const { analyzeSoilHealth } = require('../utils/soilAdvisor');
@@ -17,7 +18,7 @@ const getSoilReports = async (req, res) => {
 
     res.json({ success: true, count: reports.length, data: reports });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
@@ -45,31 +46,87 @@ const createSoilReport = async (req, res) => {
     }
 
     // Run expert agronomic advisory algorithm
-    const analysis = analyzeSoilHealth({
-      phLevel: Number(phLevel),
-      nitrogenKgHa: Number(nitrogenKgHa),
-      phosphorusKgHa: Number(phosphorusKgHa),
-      potassiumKgHa: Number(potassiumKgHa),
-      moisturePercent: Number(moisturePercent || 40),
-    });
+    const values = validateSoilValues({ phLevel, nitrogenKgHa, phosphorusKgHa, potassiumKgHa, moisturePercent, organicCarbonPercent });
+    const analysis = analyzeSoilHealth(values);
+
+    if (sampleName !== undefined && (typeof sampleName !== 'string' || sampleName.trim().length > 100)) {
+      return res.status(400).json({ success: false, message: 'Sample name must be at most 100 characters' });
+    }
 
     const soilReport = await SoilReport.create({
       userId: req.user._id,
       farmId,
       sampleName: sampleName || 'Field Soil Sample',
-      phLevel: Number(phLevel),
-      nitrogenKgHa: Number(nitrogenKgHa),
-      phosphorusKgHa: Number(phosphorusKgHa),
-      potassiumKgHa: Number(potassiumKgHa),
-      organicCarbonPercent: Number(organicCarbonPercent || 0.6),
-      moisturePercent: Number(moisturePercent || 40),
+      ...values,
       healthGrade: analysis.healthGrade,
       recommendations: analysis.recommendations,
     });
 
     res.status(201).json({ success: true, data: soilReport });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
+  }
+};
+
+const validateSoilValues = (input) => {
+  const limits = {
+    phLevel: [0, 14],
+    nitrogenKgHa: [0, 10000],
+    phosphorusKgHa: [0, 10000],
+    potassiumKgHa: [0, 10000],
+    organicCarbonPercent: [0, 100],
+    moisturePercent: [0, 100],
+  };
+  const values = {};
+  for (const [key, [min, max]] of Object.entries(limits)) {
+    const raw = input[key];
+    if (raw === undefined && ['organicCarbonPercent', 'moisturePercent'].includes(key)) {
+      values[key] = key === 'organicCarbonPercent' ? 0.6 : 40;
+      continue;
+    }
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < min || value > max) {
+      const error = new Error(`${key} must be a number between ${min} and ${max}`);
+      error.statusCode = 400;
+      throw error;
+    }
+    values[key] = value;
+  }
+  return values;
+};
+
+const canAccessReport = (report, user) => user.role === 'admin' || report.userId.toString() === user._id.toString();
+
+const updateSoilReport = async (req, res) => {
+  try {
+    const report = await SoilReport.findById(req.params.id);
+    if (!report) return res.status(404).json({ success: false, message: 'Soil report not found' });
+    if (!canAccessReport(report, req.user)) return res.status(403).json({ success: false, message: 'Not authorized to edit this report' });
+
+    const fields = ['sampleName', 'phLevel', 'nitrogenKgHa', 'phosphorusKgHa', 'potassiumKgHa', 'organicCarbonPercent', 'moisturePercent'];
+    const values = validateSoilValues({ ...report.toObject(), ...Object.fromEntries(fields.filter((field) => req.body[field] !== undefined).map((field) => [field, req.body[field]])) });
+    const analysis = analyzeSoilHealth(values);
+    Object.assign(report, values, { healthGrade: analysis.healthGrade, recommendations: analysis.recommendations });
+    if (req.body.sampleName !== undefined) {
+      if (typeof req.body.sampleName !== 'string' || req.body.sampleName.trim().length > 100) return res.status(400).json({ success: false, message: 'Sample name must be at most 100 characters' });
+      report.sampleName = req.body.sampleName.trim();
+    }
+    await report.save();
+    return res.json({ success: true, data: report });
+  } catch (error) {
+    return sendControllerError(res, error);
+  }
+};
+
+const deleteSoilReport = async (req, res) => {
+  try {
+    const report = await SoilReport.findById(req.params.id);
+    if (!report) return res.status(404).json({ success: false, message: 'Soil report not found' });
+    if (!canAccessReport(report, req.user)) return res.status(403).json({ success: false, message: 'Not authorized to delete this report' });
+    await report.deleteOne();
+    return res.json({ success: true, message: 'Soil report deleted' });
+  } catch (error) {
+    return sendControllerError(res, error);
   }
 };
 
@@ -79,21 +136,23 @@ const createSoilReport = async (req, res) => {
 const previewSoilAnalysis = async (req, res) => {
   try {
     const { phLevel, nitrogenKgHa, phosphorusKgHa, potassiumKgHa, moisturePercent } = req.body;
-    const analysis = analyzeSoilHealth({
-      phLevel: Number(phLevel || 7.0),
-      nitrogenKgHa: Number(nitrogenKgHa || 300),
-      phosphorusKgHa: Number(phosphorusKgHa || 15),
-      potassiumKgHa: Number(potassiumKgHa || 150),
-      moisturePercent: Number(moisturePercent || 40),
-    });
+    const analysis = analyzeSoilHealth(validateSoilValues({
+      phLevel: phLevel === undefined ? 7 : phLevel,
+      nitrogenKgHa: nitrogenKgHa === undefined ? 300 : nitrogenKgHa,
+      phosphorusKgHa: phosphorusKgHa === undefined ? 15 : phosphorusKgHa,
+      potassiumKgHa: potassiumKgHa === undefined ? 150 : potassiumKgHa,
+      moisturePercent: moisturePercent === undefined ? 40 : moisturePercent,
+    }));
     res.json({ success: true, data: analysis });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return sendControllerError(res, error);
   }
 };
 
 module.exports = {
   getSoilReports,
   createSoilReport,
+  updateSoilReport,
+  deleteSoilReport,
   previewSoilAnalysis,
 };

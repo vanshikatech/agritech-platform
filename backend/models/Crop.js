@@ -16,14 +16,18 @@ const cropSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please specify crop name'],
       trim: true,
+      maxlength: 100,
     },
     variety: {
       type: String,
       default: 'Standard Hybrid',
+      maxlength: 100,
     },
     areaCultivatedAcres: {
       type: Number,
       default: 1,
+      min: 0.01,
+      max: 1000000,
     },
     sowingDate: {
       type: Date,
@@ -46,10 +50,13 @@ const cropSchema = new mongoose.Schema(
     expectedYieldKg: {
       type: Number,
       default: 1000,
+      min: 0,
+      max: 1000000000,
     },
     notes: {
       type: String,
       default: '',
+      maxlength: 2000,
     },
   },
   {

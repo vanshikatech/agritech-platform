@@ -20,6 +20,7 @@ import Marketplace from './pages/Marketplace';
 import OrderHistory from './pages/OrderHistory';
 import CommunityForum from './pages/CommunityForum';
 import AdminDashboard from './pages/AdminDashboard';
+import ProfileSettings from './pages/ProfileSettings';
 
 import './App.css';
 
@@ -95,6 +96,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route path="/settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
                   <Route
                     path="/community"
                     element={

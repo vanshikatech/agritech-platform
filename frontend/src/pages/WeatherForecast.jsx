@@ -10,14 +10,17 @@ const WeatherForecast = () => {
   const [district, setDistrict] = useState(user?.location?.district || 'Pune');
   const [forecastData, setForecastData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const fetchWeather = async (targetDistrict) => {
     setLoading(true);
     try {
       const data = await WeatherAPI.getForecast(targetDistrict);
       setForecastData(data);
+      setLoadError('');
     } catch (e) {
-      console.error(e);
+      setForecastData(null);
+      setLoadError(e.response?.data?.message || 'Could not retrieve weather. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -61,6 +64,8 @@ const WeatherForecast = () => {
         <div className="text-center py-5">
           <div className="spinner-border text-success" role="status"></div>
         </div>
+      ) : loadError ? (
+        <div className="alert alert-warning" role="alert">{loadError}</div>
       ) : forecastData ? (
         <>
           {/* Today's Highlight Card */}

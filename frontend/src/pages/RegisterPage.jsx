@@ -71,8 +71,9 @@ const RegisterPage = () => {
             <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-12">
-                  <label className="form-label small fw-semibold">Full Name</label>
+                  <label htmlFor="register-name" className="form-label small fw-semibold">Full Name</label>
                   <input
+                    id="register-name"
                     type="text"
                     name="name"
                     className="form-control"
@@ -84,8 +85,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Email Address</label>
+                  <label htmlFor="register-email" className="form-label small fw-semibold">Email Address</label>
                   <input
+                    id="register-email"
                     type="email"
                     name="email"
                     className="form-control"
@@ -97,8 +99,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Phone Number</label>
+                  <label htmlFor="register-phone" className="form-label small fw-semibold">Phone Number</label>
                   <input
+                    id="register-phone"
                     type="tel"
                     name="phone"
                     className="form-control"
@@ -109,8 +112,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Account Role</label>
+                  <label htmlFor="register-role" className="form-label small fw-semibold">Account Role</label>
                   <select
+                    id="register-role"
                     name="role"
                     className="form-select"
                     value={formData.role}
@@ -122,8 +126,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Preferred Language</label>
+                  <label htmlFor="register-language" className="form-label small fw-semibold">Preferred Language</label>
                   <select
+                    id="register-language"
                     name="language"
                     className="form-select"
                     value={formData.language}
@@ -135,8 +140,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">District</label>
+                  <label htmlFor="register-district" className="form-label small fw-semibold">District</label>
                   <input
+                    id="register-district"
                     type="text"
                     name="district"
                     className="form-control"
@@ -147,8 +153,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Village / Taluka</label>
+                  <label htmlFor="register-village" className="form-label small fw-semibold">Village / Taluka</label>
                   <input
+                    id="register-village"
                     type="text"
                     name="village"
                     className="form-control"
@@ -159,15 +166,16 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label small fw-semibold">Password (min 6 chars)</label>
+                  <label htmlFor="register-password" className="form-label small fw-semibold">Password (min 8 characters)</label>
                   <input
+                    id="register-password"
                     type="password"
                     name="password"
                     className="form-control"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
-                    minLength={6}
+                    minLength={8}
                     required
                   />
                 </div>

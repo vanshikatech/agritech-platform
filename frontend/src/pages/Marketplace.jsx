@@ -14,6 +14,7 @@ const Marketplace = () => {
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
@@ -32,8 +33,11 @@ const Marketplace = () => {
     try {
       const data = await MarketAPI.getProducts(cat === 'All' ? '' : cat);
       setProducts(data || []);
+      setLoadError('');
     } catch (err) {
       console.error(err);
+      setProducts([]);
+      setLoadError(err.response?.data?.message || 'Could not load products. Check that the API is available.');
     } finally {
       setLoading(false);
     }
@@ -64,6 +68,7 @@ const Marketplace = () => {
 
   return (
     <div className="container py-4">
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
       {/* Header and Cart Trigger */}
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>

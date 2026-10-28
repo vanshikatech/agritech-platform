@@ -9,6 +9,7 @@ const CropMonitoring = () => {
   const [crops, setCrops] = useState([]);
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState(null);
 
@@ -30,11 +31,13 @@ const CropMonitoring = () => {
       const [cropRes, farmRes] = await Promise.all([CropAPI.getAll(), FarmAPI.getAll()]);
       setCrops(cropRes || []);
       setFarms(farmRes || []);
+      setLoadError('');
       if (farmRes && farmRes.length > 0 && !formData.farmId) {
         setFormData((prev) => ({ ...prev, farmId: farmRes[0]._id }));
       }
     } catch (err) {
       console.error(err);
+      setLoadError(err.response?.data?.message || 'Could not load crop data. Check that the API is available.');
     } finally {
       setLoading(false);
     }
@@ -71,8 +74,12 @@ const CropMonitoring = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete this crop record?')) {
-      await CropAPI.delete(id);
-      loadData();
+      try {
+        await CropAPI.delete(id);
+        loadData();
+      } catch (err) {
+        setLoadError(err.response?.data?.message || 'Failed to delete crop. Please try again.');
+      }
     }
   };
 
@@ -83,6 +90,7 @@ const CropMonitoring = () => {
 
   return (
     <div className="container py-4">
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="fw-bold mb-1">🌱 {t('crops')}</h2>

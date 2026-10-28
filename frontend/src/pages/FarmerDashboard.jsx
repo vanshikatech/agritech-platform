@@ -14,6 +14,7 @@ const FarmerDashboard = () => {
   const [crops, setCrops] = useState([]);
   const [soilReports, setSoilReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -28,6 +29,7 @@ const FarmerDashboard = () => {
         setSoilReports(soilData || []);
       } catch (err) {
         console.error('Dashboard data load error:', err);
+        setLoadError(err.response?.data?.message || 'Could not load farm data. Check your connection and try again.');
       } finally {
         setLoading(false);
       }
@@ -40,6 +42,7 @@ const FarmerDashboard = () => {
 
   return (
     <div className="container py-4">
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
       {/* Top Welcome & Quick Actions */}
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>

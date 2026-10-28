@@ -7,14 +7,16 @@ const OrderHistory = () => {
   const { t } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const data = await MarketAPI.getMyOrders();
         setOrders(data || []);
+        setLoadError('');
       } catch (err) {
-        console.error(err);
+        setLoadError(err.response?.data?.message || 'Could not load orders. Check that the API is available.');
       } finally {
         setLoading(false);
       }
@@ -43,11 +45,13 @@ const OrderHistory = () => {
         <p className="text-muted small mb-0">Track farm inputs deliveries and purchase records</p>
       </div>
 
+      {loadError && <div className="alert alert-danger" role="alert">{loadError}</div>}
+
       {loading ? (
         <div className="text-center py-5">
           <div className="spinner-border text-success" role="status"></div>
         </div>
-      ) : orders.length === 0 ? (
+      ) : loadError ? null : orders.length === 0 ? (
         <div className="card text-center p-5 border-0 shadow-sm rounded-4">
           <div className="fs-1 mb-2">📦</div>
           <h5 className="fw-bold">No Orders Placed Yet</h5>

@@ -44,14 +44,17 @@ const forumPostSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please add a topic title'],
       trim: true,
+      maxlength: 160,
     },
     cropCategory: {
       type: String,
       default: 'General Agriculture',
+      maxlength: 80,
     },
     question: {
       type: String,
       required: [true, 'Please write your question or observation'],
+      maxlength: 5000,
     },
     tags: [String],
     upvotes: {
@@ -69,6 +72,13 @@ const forumPostSchema = new mongoose.Schema(
       enum: ['Open', 'Under Review by Agronomist', 'Resolved'],
       default: 'Open',
     },
+    moderationStatus: { type: String, enum: ['Visible', 'Hidden'], default: 'Visible' },
+    reports: [{
+      reporterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      reason: { type: String, required: true, maxlength: 500 },
+      status: { type: String, enum: ['Open', 'Reviewed'], default: 'Open' },
+      createdAt: { type: Date, default: Date.now },
+    }],
     replies: [commentSchema],
   },
   {
